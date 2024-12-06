@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>短链接管理系统</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #34495e;
+            margin: 20px 0;
+            font-size: 1.5em;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .url-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .delete-btn {
+            background-color: #e74c3c;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .short-url {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .short-url:hover {
+            text-decoration: underline;
+        }
+
+        .stats {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            background-color: #fde8e7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <div id="login" class="login-container">
+        <h1>短链接管理系统</h1>
+        <div class="form-group">
+            <input type="password" id="token" placeholder="请输入管理员密码">
+        </div>
+        <div id="error-msg" class="error-message">密码错误，请重试</div>
+        <button onclick="login()">登录</button>
+    </div>
+    
+    <div id="main" class="container" style="display: none;">
+        <h1>短链接管理系统</h1>
+        
+        <h2>创建新链接</h2>
+        <div class="url-form">
+            <input type="text" id="longUrl" placeholder="输入长链接">
+            <input type="text" id="note" placeholder="输入备注">
+            <button onclick="createUrl()">创建短链接</button>
+        </div>
+        
+        <h2>链接列表</h2>
+        <table id="urlList">
+            <thead>
+                <tr>
+                    <th>短链接</th>
+                    <th>长链接</th>
+                    <th>备注</th>
+                    <th>访问统计</th>
+                    <th>最后访问时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        let token = '';
+
+        async function login() {
+            token = document.getElementById('token').value;
+            const errorMsg = document.getElementById('error-msg');
+            const loginContainer = document.getElementById('login');
+            
+            // 测试令牌是否有效
+            const response = await fetch('/api/urls', {
+                headers: { 'Authorization': token }
+            });
+
+            if (response.status === 401) {
+                // 显示错误信息
+                errorMsg.style.display = 'block';
+                // 添加抖动效果
+                loginContainer.classList.add('shake');
+                // 清空密码输入
+                document.getElementById('token').value = '';
+                // 移除抖动效果（动画结束后）
+                setTimeout(() => {
+                    loginContainer.classList.remove('shake');
+                }, 500);
+                return;
+            }
+
+            // 登录成功
+            errorMsg.style.display = 'none';
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('main').style.display = 'block';
+            loadUrls();
+        }
+
+        // 添加回车键登录支持
+        document.getElementById('token').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
+        async function loadUrls() {
+            try {
+                const response = await fetch('/api/urls', {
+                    headers: { 'Authorization': token }
+                });
+                
+                if (response.status === 401) {
+                    // 如果令牌失效，返回登录界面
+                    document.getElementById('main').style.display = 'none';
+                    document.getElementById('login').style.display = 'block';
+                    document.getElementById('error-msg').style.display = 'block';
+                    return;
+                }
+
+                const urls = await response.json();
+                const tbody = document.querySelector('#urlList tbody');
+                tbody.innerHTML = '';
+                
+                urls.forEach(url => {
+                    const tr = document.createElement('tr');
+                    const lastVisit = url.last_visit ? new Date(url.last_visit).toLocaleString() : '-';
+                    tr.innerHTML = `
+                        <td><a href="/s/${url.short_url}" class="short-url" target="_blank">${url.short_url}</a></td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                            <a href="${url.long_url}" target="_blank" style="color: #666; text-decoration: none;">
+                                ${url.long_url}
+                            </a>
+                        </td>
+                        <td>${url.note}</td>
+                        <td class="stats">${url.visit_count} 次访问</td>
+                        <td class="stats">${lastVisit}</td>
+                        <td><button class="delete-btn" onclick="deleteUrl('${url.short_url}')">删除</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                alert('加载数据失败，请刷新页面重试');
+            }
+        }
+
+        async function createUrl() {
+            const longUrl = document.getElementById('longUrl').value;
+            const note = document.getElementById('note').value;
+            
+            if (!longUrl) {
+                alert('请输入长链接');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/urls', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({ long_url: longUrl, note: note })
+                });
+
+                if (response.status === 401) {
+                    alert('登录已过期，请重新登录');
+                    document.getElementById('main').style.display = 'none';
+                    document.getElementById('login').style.display = 'block';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('创建失败');
+                }
+                
+                document.getElementById('longUrl').value = '';
+                document.getElementById('note').value = '';
+                loadUrls();
+            } catch (error) {
+                alert('创建短链接失败，请重试');
+            }
+        }
+
+        async function deleteUrl(shortUrl) {
+            if (!confirm('确定要删除这个短链接吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/urls/${shortUrl}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': token }
+                });
+
+                if (response.status === 401) {
+                    alert('登录已过期，请重新登录');
+                    document.getElementById('main').style.display = 'none';
+                    document.getElementById('login').style.display = 'block';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('删除失败');
+                }
+
+                loadUrls();
+            } catch (error) {
+                alert('删除失败，请重试');
+            }
+        }
+
+        document.getElementById('login').style.display = 'block';
+    </script>
+</body>
+</html> 
