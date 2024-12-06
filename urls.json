@@ -3,21 +3,28 @@
     "short_url": "804475",
     "long_url": "https://www.bilibili.com/video/BV1HQznYTEDu/?spm_id_from=333.337.search-card.all.click&vd_source=0c06b9cbbf695c7b1ec0aa189e3389b2",
     "note": "bilibili 视频1",
-    "visit_count": 1,
-    "last_visit": "2024-12-06T07:19:41.455365800Z"
+    "visit_count": 3,
+    "last_visit": "2024-12-06T09:45:38.587059900Z"
   },
-  "971439": {
-    "short_url": "971439",
-    "long_url": "https://search.bilibili.com/all?keyword=cursor%E4%BD%BF%E7%94%A8&from_source=webtop_search&spm_id_from=333.1007&search_source=5",
-    "note": "bilibili短链接搜索",
-    "visit_count": 1,
-    "last_visit": "2024-12-06T07:18:47.424434800Z"
+  "399635": {
+    "short_url": "399635",
+    "long_url": "https://www.baidu.com/",
+    "note": "baidu",
+    "visit_count": 0,
+    "last_visit": null
   },
   "570216": {
     "short_url": "570216",
     "long_url": "https://www.baidu.com/",
     "note": "baidu",
-    "visit_count": 1,
-    "last_visit": "2024-12-06T07:27:34.602262100Z"
+    "visit_count": 2,
+    "last_visit": "2024-12-06T09:45:41.679548400Z"
+  },
+  "971439": {
+    "short_url": "971439",
+    "long_url": "https://search.bilibili.com/all?keyword=cursor%E4%BD%BF%E7%94%A8&from_source=webtop_search&spm_id_from=333.1007&search_source=5",
+    "note": "bilibili短链接搜索",
+    "visit_count": 2,
+    "last_visit": "2024-12-06T09:45:45.014003900Z"
   }
 }
