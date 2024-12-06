@@ -1,4 +1,4 @@
 window.APP_CONFIG = {
-    apiBase: '/api',
-    redirectBase: '/r'
+    apiBase: '/s/api',
+    redirectBase: '/s/r'
 }; 

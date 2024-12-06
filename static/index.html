@@ -4,7 +4,7 @@
     <title>短链接管理系统</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="/static/config.js"></script>
+    <script src="config.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -191,6 +191,11 @@
     <script>
         let token = '';
         const config = window.APP_CONFIG;
+        
+        // 构建完整的 API URL
+        function getApiUrl(path) {
+            return `${window.location.origin}${config.apiBase}${path}`;
+        }
 
         async function login() {
             token = document.getElementById('token').value;
@@ -198,7 +203,8 @@
             const loginContainer = document.getElementById('login');
             
             try {
-                const response = await fetch(`${config.apiBase}/urls`, {
+                // 使用 getApiUrl 构建完整路径
+                const response = await fetch(getApiUrl('/urls'), {
                     headers: { 'Authorization': token }
                 });
 
@@ -223,15 +229,9 @@
             }
         }
 
-        document.getElementById('token').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
-
         async function loadUrls() {
             try {
-                const response = await fetch(`${config.apiBase}/urls`, {
+                const response = await fetch(getApiUrl('/urls'), {
                     headers: { 'Authorization': token }
                 });
                 
@@ -279,7 +279,7 @@
             }
             
             try {
-                const response = await fetch(`${config.apiBase}/urls`, {
+                const response = await fetch(getApiUrl('/urls'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -313,7 +313,7 @@
             }
             
             try {
-                const response = await fetch(`${config.apiBase}/urls/${shortUrl}`, {
+                const response = await fetch(getApiUrl(`/urls/${shortUrl}`), {
                     method: 'DELETE',
                     headers: { 'Authorization': token }
                 });
@@ -334,6 +334,12 @@
                 alert('删除失败，请重试');
             }
         }
+
+        document.getElementById('token').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
 
         document.getElementById('login').style.display = 'block';
     </script>

@@ -1,7 +1,7 @@
 use axum::{
     extract::{Path, State},
     http::{HeaderMap, StatusCode},
-    response::{Html, IntoResponse, Redirect, Response},
+    response::{IntoResponse, Redirect, Response},
     routing::{get, post},
     Json, Router,
 };
@@ -12,7 +12,6 @@ use std::{
     collections::HashMap,
     sync::{Arc, RwLock},
 };
-use tower_http::services::ServeDir;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Config {
@@ -60,8 +59,6 @@ struct AppState {
 async fn main() {
     let config = Config::load();
     let db: DbState = Arc::new(RwLock::new(load_db()));
-    
-    generate_frontend_config(&config);
 
     let state = AppState {
         db: db.clone(),
@@ -70,11 +67,9 @@ async fn main() {
     };
 
     let app = Router::new()
-        .route("/", get(serve_index))
         .route(&format!("{}/urls", config.api_prefix), get(list_urls).post(create_url))
         .route(&format!("{}/urls/:short_url", config.api_prefix), get(get_url).delete(delete_url))
         .route(&format!("{}/:short_url", config.redirect_prefix), get(redirect_to_long_url))
-        .nest_service("/static", ServeDir::new("static"))
         .with_state(state);
 
     println!("Server running on http://{}:{}", config.host, config.port);
@@ -181,22 +176,6 @@ async fn redirect_to_long_url(
     } else {
         StatusCode::NOT_FOUND.into_response()
     }
-}
-
-async fn serve_index() -> Html<&'static str> {
-    Html(include_str!("../static/index.html"))
-}
-
-fn generate_frontend_config(config: &Config) {
-    let template = std::fs::read_to_string("static/config.template.js")
-        .expect("Failed to read config template");
-    
-    let config_js = template
-        .replace("{{API_PREFIX}}", &config.api_prefix)
-        .replace("{{REDIRECT_PREFIX}}", &config.redirect_prefix);
-    
-    std::fs::write("static/config.js", config_js)
-        .expect("Failed to write config.js");
 }
 
 fn load_db() -> HashMap<String, UrlEntry> {
